@@ -98,7 +98,7 @@ void T547::display() {
     // the stock 15-frame (too dark/bloomy, ~12 visible flashes) and an
     // earlier too-light 2-frame attempt. Adjust frame count up/down here
     // to taste.
-    epd_clear_area_cycles(epd_full_screen(), 1, 50);
+    epd_clear_area_cycles(epd_full_screen(), 2, 50);
     epd_draw_image_frames(epd_full_screen(), this->buffer_, BLACK_ON_WHITE, 6);
   }
   epd_poweroff();
@@ -112,7 +112,7 @@ void T547::clean() {
   if (this->greyscale_) {
     epd_clear();
   } else {
-    epd_clear_area_cycles(epd_full_screen(), 1, 50);
+    epd_clear_area_cycles(epd_full_screen(), 2, 50);
   }
 
   ESP_LOGV(TAG, "Clean finished (%ums)", millis() - start_time);
