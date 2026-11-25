@@ -402,7 +402,7 @@ display:
         } else if (id(hourly_forecast_condition_1).state == "cloudy") {
           it.printf(x_weather, y_weather, id(fa_icons), TextAlign::CENTER, "\U0000f0c2");
         } else if (id(hourly_forecast_condition_1).state == "partlycloudy") {
-          if (id(ha_sun).state == "below_horizon") {
+          if (atoi(id(hourly_forecast_time_1).state.c_str()) < 7 || atoi(id(hourly_forecast_time_1).state.c_str()) >= 19) {
             it.printf(x_weather, y_weather, id(fa_icons), TextAlign::CENTER, "\U0000f6c3");
           } else {
             it.printf(x_weather, y_weather, id(fa_icons), TextAlign::CENTER, "\U0000f6c4");
@@ -448,7 +448,7 @@ display:
         } else if (id(hourly_forecast_condition_2).state == "cloudy") {
           it.printf(x_weather, y_weather, id(fa_icons), TextAlign::CENTER, "\U0000f0c2");
         } else if (id(hourly_forecast_condition_2).state == "partlycloudy") {
-          if (id(ha_sun).state == "below_horizon") {
+          if (atoi(id(hourly_forecast_time_2).state.c_str()) < 7 || atoi(id(hourly_forecast_time_2).state.c_str()) >= 19) {
             it.printf(x_weather, y_weather, id(fa_icons), TextAlign::CENTER, "\U0000f6c3");
           } else {
             it.printf(x_weather, y_weather, id(fa_icons), TextAlign::CENTER, "\U0000f6c4");
@@ -494,7 +494,7 @@ display:
         } else if (id(hourly_forecast_condition_3).state == "cloudy") {
           it.printf(x_weather, y_weather, id(fa_icons), TextAlign::CENTER, "\U0000f0c2");
         } else if (id(hourly_forecast_condition_3).state == "partlycloudy") {
-          if (id(ha_sun).state == "below_horizon") {
+          if (atoi(id(hourly_forecast_time_3).state.c_str()) < 7 || atoi(id(hourly_forecast_time_3).state.c_str()) >= 19) {
             it.printf(x_weather, y_weather, id(fa_icons), TextAlign::CENTER, "\U0000f6c3");
           } else {
             it.printf(x_weather, y_weather, id(fa_icons), TextAlign::CENTER, "\U0000f6c4");
@@ -540,7 +540,7 @@ display:
         } else if (id(hourly_forecast_condition_4).state == "cloudy") {
           it.printf(x_weather, y_weather, id(fa_icons), TextAlign::CENTER, "\U0000f0c2");
         } else if (id(hourly_forecast_condition_4).state == "partlycloudy") {
-          if (id(ha_sun).state == "below_horizon") {
+          if (atoi(id(hourly_forecast_time_4).state.c_str()) < 7 || atoi(id(hourly_forecast_time_4).state.c_str()) >= 19) {
             it.printf(x_weather, y_weather, id(fa_icons), TextAlign::CENTER, "\U0000f6c3");
           } else {
             it.printf(x_weather, y_weather, id(fa_icons), TextAlign::CENTER, "\U0000f6c4");
