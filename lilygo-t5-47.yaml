@@ -396,40 +396,45 @@ display:
 
         it.printf(x_weather, y_weather, id(sf_pro), TextAlign::CENTER, "%.20s", id(hourly_forecast_time_1).state.c_str());
         y_weather += text_height_med/2 + margin + icon_height/2;
-        
-        if (id(hourly_forecast_condition_1).state == "clear-night") {
+
+        std::string cond_1 = id(hourly_forecast_condition_1).state;
+        int hour_1_num = atoi(id(hourly_forecast_time_1).state.c_str());
+        if (cond_1 == "clear-night" && hour_1_num >= 7 && hour_1_num < 19) { cond_1 = "sunny"; }
+        else if (cond_1 == "sunny" && (hour_1_num < 7 || hour_1_num >= 19)) { cond_1 = "clear-night"; }
+
+        if (cond_1 == "clear-night") {
           it.printf(x_weather, y_weather, id(fa_icons), TextAlign::CENTER, "\U0000f186");
-        } else if (id(hourly_forecast_condition_1).state == "cloudy") {
+        } else if (cond_1 == "cloudy") {
           it.printf(x_weather, y_weather, id(fa_icons), TextAlign::CENTER, "\U0000f0c2");
-        } else if (id(hourly_forecast_condition_1).state == "partlycloudy") {
+        } else if (cond_1 == "partlycloudy") {
           if (atoi(id(hourly_forecast_time_1).state.c_str()) < 7 || atoi(id(hourly_forecast_time_1).state.c_str()) >= 19) {
             it.printf(x_weather, y_weather, id(fa_icons), TextAlign::CENTER, "\U0000f6c3");
           } else {
             it.printf(x_weather, y_weather, id(fa_icons), TextAlign::CENTER, "\U0000f6c4");
           }
-        } else if (id(hourly_forecast_condition_1).state == "fog") {
+        } else if (cond_1 == "fog") {
           it.printf(x_weather, y_weather, id(fa_icons), TextAlign::CENTER, "\U0000f74e");
-        } else if (id(hourly_forecast_condition_1).state == "hail") {
+        } else if (cond_1 == "hail") {
           it.printf(x_weather, y_weather, id(fa_icons), TextAlign::CENTER, "\U0000f739");
-        } else if (id(hourly_forecast_condition_1).state == "lightning") {
+        } else if (cond_1 == "lightning") {
           it.printf(x_weather, y_weather, id(fa_icons), TextAlign::CENTER, "\U0000f76c");
-        } else if (id(hourly_forecast_condition_1).state == "lightning-rainy") {
+        } else if (cond_1 == "lightning-rainy") {
           it.printf(x_weather, y_weather, id(fa_icons), TextAlign::CENTER, "\U0000f740");
-        } else if (id(hourly_forecast_condition_1).state == "pouring") {
+        } else if (cond_1 == "pouring") {
           it.printf(x_weather, y_weather, id(fa_icons), TextAlign::CENTER, "\U0000e4e4");
-        } else if (id(hourly_forecast_condition_1).state == "rainy") {
+        } else if (cond_1 == "rainy") {
           it.printf(x_weather, y_weather, id(fa_icons), TextAlign::CENTER, "\U0000f73f");
-        } else if (id(hourly_forecast_condition_1).state == "snowy") {
+        } else if (cond_1 == "snowy") {
           it.printf(x_weather, y_weather, id(fa_icons), TextAlign::CENTER, "\U0000f742");
-        } else if (id(hourly_forecast_condition_1).state == "snowy-rainy") {
+        } else if (cond_1 == "snowy-rainy") {
           it.printf(x_weather, y_weather, id(fa_icons), TextAlign::CENTER, "\U0000f741");
-        } else if (id(hourly_forecast_condition_1).state == "sunny") {
+        } else if (cond_1 == "sunny") {
           it.printf(x_weather, y_weather, id(fa_icons), TextAlign::CENTER, "\U0000f185");
-        } else if (id(hourly_forecast_condition_1).state == "windy") {
+        } else if (cond_1 == "windy") {
           it.printf(x_weather, y_weather, id(fa_icons), TextAlign::CENTER, "\U0000f72e");
-        } else if (id(hourly_forecast_condition_1).state == "windy-variant") {
+        } else if (cond_1 == "windy-variant") {
           it.printf(x_weather, y_weather, id(fa_icons), TextAlign::CENTER, "\U0000f72e");
-        } else if (id(hourly_forecast_condition_1).state == "exceptional") {
+        } else if (cond_1 == "exceptional") {
           it.printf(x_weather, y_weather, id(fa_icons), TextAlign::CENTER, "\U0000e491");
         }
 
@@ -442,40 +447,45 @@ display:
 
         it.printf(x_weather, y_weather, id(sf_pro), TextAlign::CENTER, "%.20s", id(hourly_forecast_time_2).state.c_str());
         y_weather += text_height_med/2 + margin + icon_height/2;
-        
-        if (id(hourly_forecast_condition_2).state == "clear-night") {
+
+        std::string cond_2 = id(hourly_forecast_condition_2).state;
+        int hour_2_num = atoi(id(hourly_forecast_time_2).state.c_str());
+        if (cond_2 == "clear-night" && hour_2_num >= 7 && hour_2_num < 19) { cond_2 = "sunny"; }
+        else if (cond_2 == "sunny" && (hour_2_num < 7 || hour_2_num >= 19)) { cond_2 = "clear-night"; }
+
+        if (cond_2 == "clear-night") {
           it.printf(x_weather, y_weather, id(fa_icons), TextAlign::CENTER, "\U0000f186");
-        } else if (id(hourly_forecast_condition_2).state == "cloudy") {
+        } else if (cond_2 == "cloudy") {
           it.printf(x_weather, y_weather, id(fa_icons), TextAlign::CENTER, "\U0000f0c2");
-        } else if (id(hourly_forecast_condition_2).state == "partlycloudy") {
+        } else if (cond_2 == "partlycloudy") {
           if (atoi(id(hourly_forecast_time_2).state.c_str()) < 7 || atoi(id(hourly_forecast_time_2).state.c_str()) >= 19) {
             it.printf(x_weather, y_weather, id(fa_icons), TextAlign::CENTER, "\U0000f6c3");
           } else {
             it.printf(x_weather, y_weather, id(fa_icons), TextAlign::CENTER, "\U0000f6c4");
           }
-        } else if (id(hourly_forecast_condition_2).state == "fog") {
+        } else if (cond_2 == "fog") {
           it.printf(x_weather, y_weather, id(fa_icons), TextAlign::CENTER, "\U0000f74e");
-        } else if (id(hourly_forecast_condition_2).state == "hail") {
+        } else if (cond_2 == "hail") {
           it.printf(x_weather, y_weather, id(fa_icons), TextAlign::CENTER, "\U0000f739");
-        } else if (id(hourly_forecast_condition_2).state == "lightning") {
+        } else if (cond_2 == "lightning") {
           it.printf(x_weather, y_weather, id(fa_icons), TextAlign::CENTER, "\U0000f76c");
-        } else if (id(hourly_forecast_condition_2).state == "lightning-rainy") {
+        } else if (cond_2 == "lightning-rainy") {
           it.printf(x_weather, y_weather, id(fa_icons), TextAlign::CENTER, "\U0000f740");
-        } else if (id(hourly_forecast_condition_2).state == "pouring") {
+        } else if (cond_2 == "pouring") {
           it.printf(x_weather, y_weather, id(fa_icons), TextAlign::CENTER, "\U0000e4e4");
-        } else if (id(hourly_forecast_condition_2).state == "rainy") {
+        } else if (cond_2 == "rainy") {
           it.printf(x_weather, y_weather, id(fa_icons), TextAlign::CENTER, "\U0000f73f");
-        } else if (id(hourly_forecast_condition_2).state == "snowy") {
+        } else if (cond_2 == "snowy") {
           it.printf(x_weather, y_weather, id(fa_icons), TextAlign::CENTER, "\U0000f742");
-        } else if (id(hourly_forecast_condition_2).state == "snowy-rainy") {
+        } else if (cond_2 == "snowy-rainy") {
           it.printf(x_weather, y_weather, id(fa_icons), TextAlign::CENTER, "\U0000f741");
-        } else if (id(hourly_forecast_condition_2).state == "sunny") {
+        } else if (cond_2 == "sunny") {
           it.printf(x_weather, y_weather, id(fa_icons), TextAlign::CENTER, "\U0000f185");
-        } else if (id(hourly_forecast_condition_2).state == "windy") {
+        } else if (cond_2 == "windy") {
           it.printf(x_weather, y_weather, id(fa_icons), TextAlign::CENTER, "\U0000f72e");
-        } else if (id(hourly_forecast_condition_2).state == "windy-variant") {
+        } else if (cond_2 == "windy-variant") {
           it.printf(x_weather, y_weather, id(fa_icons), TextAlign::CENTER, "\U0000f72e");
-        } else if (id(hourly_forecast_condition_2).state == "exceptional") {
+        } else if (cond_2 == "exceptional") {
           it.printf(x_weather, y_weather, id(fa_icons), TextAlign::CENTER, "\U0000e491");
         }
 
@@ -488,40 +498,45 @@ display:
 
         it.printf(x_weather, y_weather, id(sf_pro), TextAlign::CENTER, "%.20s", id(hourly_forecast_time_3).state.c_str());
         y_weather += text_height_med/2 + margin + icon_height/2;
-        
-        if (id(hourly_forecast_condition_3).state == "clear-night") {
+
+        std::string cond_3 = id(hourly_forecast_condition_3).state;
+        int hour_3_num = atoi(id(hourly_forecast_time_3).state.c_str());
+        if (cond_3 == "clear-night" && hour_3_num >= 7 && hour_3_num < 19) { cond_3 = "sunny"; }
+        else if (cond_3 == "sunny" && (hour_3_num < 7 || hour_3_num >= 19)) { cond_3 = "clear-night"; }
+
+        if (cond_3 == "clear-night") {
           it.printf(x_weather, y_weather, id(fa_icons), TextAlign::CENTER, "\U0000f186");
-        } else if (id(hourly_forecast_condition_3).state == "cloudy") {
+        } else if (cond_3 == "cloudy") {
           it.printf(x_weather, y_weather, id(fa_icons), TextAlign::CENTER, "\U0000f0c2");
-        } else if (id(hourly_forecast_condition_3).state == "partlycloudy") {
+        } else if (cond_3 == "partlycloudy") {
           if (atoi(id(hourly_forecast_time_3).state.c_str()) < 7 || atoi(id(hourly_forecast_time_3).state.c_str()) >= 19) {
             it.printf(x_weather, y_weather, id(fa_icons), TextAlign::CENTER, "\U0000f6c3");
           } else {
             it.printf(x_weather, y_weather, id(fa_icons), TextAlign::CENTER, "\U0000f6c4");
           }
-        } else if (id(hourly_forecast_condition_3).state == "fog") {
+        } else if (cond_3 == "fog") {
           it.printf(x_weather, y_weather, id(fa_icons), TextAlign::CENTER, "\U0000f74e");
-        } else if (id(hourly_forecast_condition_3).state == "hail") {
+        } else if (cond_3 == "hail") {
           it.printf(x_weather, y_weather, id(fa_icons), TextAlign::CENTER, "\U0000f739");
-        } else if (id(hourly_forecast_condition_3).state == "lightning") {
+        } else if (cond_3 == "lightning") {
           it.printf(x_weather, y_weather, id(fa_icons), TextAlign::CENTER, "\U0000f76c");
-        } else if (id(hourly_forecast_condition_3).state == "lightning-rainy") {
+        } else if (cond_3 == "lightning-rainy") {
           it.printf(x_weather, y_weather, id(fa_icons), TextAlign::CENTER, "\U0000f740");
-        } else if (id(hourly_forecast_condition_3).state == "pouring") {
+        } else if (cond_3 == "pouring") {
           it.printf(x_weather, y_weather, id(fa_icons), TextAlign::CENTER, "\U0000e4e4");
-        } else if (id(hourly_forecast_condition_3).state == "rainy") {
+        } else if (cond_3 == "rainy") {
           it.printf(x_weather, y_weather, id(fa_icons), TextAlign::CENTER, "\U0000f73f");
-        } else if (id(hourly_forecast_condition_3).state == "snowy") {
+        } else if (cond_3 == "snowy") {
           it.printf(x_weather, y_weather, id(fa_icons), TextAlign::CENTER, "\U0000f742");
-        } else if (id(hourly_forecast_condition_3).state == "snowy-rainy") {
+        } else if (cond_3 == "snowy-rainy") {
           it.printf(x_weather, y_weather, id(fa_icons), TextAlign::CENTER, "\U0000f741");
-        } else if (id(hourly_forecast_condition_3).state == "sunny") {
+        } else if (cond_3 == "sunny") {
           it.printf(x_weather, y_weather, id(fa_icons), TextAlign::CENTER, "\U0000f185");
-        } else if (id(hourly_forecast_condition_3).state == "windy") {
+        } else if (cond_3 == "windy") {
           it.printf(x_weather, y_weather, id(fa_icons), TextAlign::CENTER, "\U0000f72e");
-        } else if (id(hourly_forecast_condition_3).state == "windy-variant") {
+        } else if (cond_3 == "windy-variant") {
           it.printf(x_weather, y_weather, id(fa_icons), TextAlign::CENTER, "\U0000f72e");
-        } else if (id(hourly_forecast_condition_3).state == "exceptional") {
+        } else if (cond_3 == "exceptional") {
           it.printf(x_weather, y_weather, id(fa_icons), TextAlign::CENTER, "\U0000e491");
         }
 
@@ -534,40 +549,45 @@ display:
 
         it.printf(x_weather, y_weather, id(sf_pro), TextAlign::CENTER, "%.20s", id(hourly_forecast_time_4).state.c_str());
         y_weather += text_height_med/2 + margin + icon_height/2;
-        
-        if (id(hourly_forecast_condition_4).state == "clear-night") {
+
+        std::string cond_4 = id(hourly_forecast_condition_4).state;
+        int hour_4_num = atoi(id(hourly_forecast_time_4).state.c_str());
+        if (cond_4 == "clear-night" && hour_4_num >= 7 && hour_4_num < 19) { cond_4 = "sunny"; }
+        else if (cond_4 == "sunny" && (hour_4_num < 7 || hour_4_num >= 19)) { cond_4 = "clear-night"; }
+
+        if (cond_4 == "clear-night") {
           it.printf(x_weather, y_weather, id(fa_icons), TextAlign::CENTER, "\U0000f186");
-        } else if (id(hourly_forecast_condition_4).state == "cloudy") {
+        } else if (cond_4 == "cloudy") {
           it.printf(x_weather, y_weather, id(fa_icons), TextAlign::CENTER, "\U0000f0c2");
-        } else if (id(hourly_forecast_condition_4).state == "partlycloudy") {
+        } else if (cond_4 == "partlycloudy") {
           if (atoi(id(hourly_forecast_time_4).state.c_str()) < 7 || atoi(id(hourly_forecast_time_4).state.c_str()) >= 19) {
             it.printf(x_weather, y_weather, id(fa_icons), TextAlign::CENTER, "\U0000f6c3");
           } else {
             it.printf(x_weather, y_weather, id(fa_icons), TextAlign::CENTER, "\U0000f6c4");
           }
-        } else if (id(hourly_forecast_condition_4).state == "fog") {
+        } else if (cond_4 == "fog") {
           it.printf(x_weather, y_weather, id(fa_icons), TextAlign::CENTER, "\U0000f74e");
-        } else if (id(hourly_forecast_condition_4).state == "hail") {
+        } else if (cond_4 == "hail") {
           it.printf(x_weather, y_weather, id(fa_icons), TextAlign::CENTER, "\U0000f739");
-        } else if (id(hourly_forecast_condition_4).state == "lightning") {
+        } else if (cond_4 == "lightning") {
           it.printf(x_weather, y_weather, id(fa_icons), TextAlign::CENTER, "\U0000f76c");
-        } else if (id(hourly_forecast_condition_4).state == "lightning-rainy") {
+        } else if (cond_4 == "lightning-rainy") {
           it.printf(x_weather, y_weather, id(fa_icons), TextAlign::CENTER, "\U0000f740");
-        } else if (id(hourly_forecast_condition_4).state == "pouring") {
+        } else if (cond_4 == "pouring") {
           it.printf(x_weather, y_weather, id(fa_icons), TextAlign::CENTER, "\U0000e4e4");
-        } else if (id(hourly_forecast_condition_4).state == "rainy") {
+        } else if (cond_4 == "rainy") {
           it.printf(x_weather, y_weather, id(fa_icons), TextAlign::CENTER, "\U0000f73f");
-        } else if (id(hourly_forecast_condition_4).state == "snowy") {
+        } else if (cond_4 == "snowy") {
           it.printf(x_weather, y_weather, id(fa_icons), TextAlign::CENTER, "\U0000f742");
-        } else if (id(hourly_forecast_condition_4).state == "snowy-rainy") {
+        } else if (cond_4 == "snowy-rainy") {
           it.printf(x_weather, y_weather, id(fa_icons), TextAlign::CENTER, "\U0000f741");
-        } else if (id(hourly_forecast_condition_4).state == "sunny") {
+        } else if (cond_4 == "sunny") {
           it.printf(x_weather, y_weather, id(fa_icons), TextAlign::CENTER, "\U0000f185");
-        } else if (id(hourly_forecast_condition_4).state == "windy") {
+        } else if (cond_4 == "windy") {
           it.printf(x_weather, y_weather, id(fa_icons), TextAlign::CENTER, "\U0000f72e");
-        } else if (id(hourly_forecast_condition_4).state == "windy-variant") {
+        } else if (cond_4 == "windy-variant") {
           it.printf(x_weather, y_weather, id(fa_icons), TextAlign::CENTER, "\U0000f72e");
-        } else if (id(hourly_forecast_condition_4).state == "exceptional") {
+        } else if (cond_4 == "exceptional") {
           it.printf(x_weather, y_weather, id(fa_icons), TextAlign::CENTER, "\U0000e491");
         }
 
