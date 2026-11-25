@@ -1,0 +1,577 @@
+substitutions:
+  run_time: 1min #can be as long as needed to get data 
+  sleep_time: 15min # normal sleep time
+  night_sleep_time: 9h # 1st sleep time after midnight
+
+esphome:
+  name: lilygo-t5-47
+
+esp32:
+  board: esp32dev
+  framework:
+    type: arduino
+
+# Enable logging (reduced verbosity: less serial/flash overhead per wake)
+logger:
+  level: WARN
+
+# Enable Home Assistant API
+api:
+
+ota:
+  - platform: esphome
+    password: !secret ota_password
+
+wifi:
+  ssid: !secret wifi_ssid
+  password: !secret wifi_password
+  power_save_mode: NONE
+  fast_connect: true
+  manual_ip:
+    static_ip: !secret static_ip
+    gateway: !secret gateway
+    subnet: 255.255.255.0
+
+  # Enable fallback hotspot (captive portal) in case wifi connection fails
+  ap:
+    ssid: "Lilygo-T5-47 Fallback Hotspot"
+    password: !secret ap_password
+
+deep_sleep:
+  # run_duration: ${run_time} 
+  # sleep_duration: ${sleep_time}
+  id: deep_sleep_1
+  esp32_ext1_wakeup:
+    pins:
+      - pin:
+          number: GPIO39
+          allow_other_uses: true
+    mode: ALL_LOW
+
+psram:
+  mode: quad
+
+time:
+  - platform: homeassistant
+    id: ntp
+
+external_components:
+  - source:
+      type: local
+      path: t547_custom
+    components: [t547]
+
+globals:
+  - id: sleep_enabled
+    type: bool
+    restore_value: yes
+    initial_value: "false"
+  - id: esp_is_sleeping
+    type: bool
+    restore_value: no
+    initial_value: "false"
+  - id: esp_is_deep_sleeping
+    type: bool
+    restore_value: no
+    initial_value: "false"
+
+sensor:
+  - platform: adc
+    pin: GPIO36
+    id: batt_volt
+    name: "Lilygo T5 4.7 Battery Voltage"
+    attenuation: 11db
+    update_interval: 900s
+    filters:
+      - multiply: 2.0723
+  - platform: template
+    name: "Lilygo T5 4.7 Battery"
+    id: batt
+    unit_of_measurement: "%"
+    accuracy_decimals: 0
+    device_class: battery
+    lambda: |-
+      int y = (1-(4.2-id(batt_volt).state)/(4.2-3.3))*100;
+      if (y < 100) {return y;} else {return 100;};
+    
+  - platform: homeassistant
+    entity_id: sensor.openweatherhourly_feels_like_temperature
+    id: feels_like_temp
+    internal: true
+
+  - platform: homeassistant
+    entity_id: sensor.hourly_forecast_temperature_1
+    id: hourly_forecast_temperature_1
+    internal: true
+
+  - platform: homeassistant
+    entity_id: sensor.hourly_forecast_temperature_2
+    id: hourly_forecast_temperature_2
+    internal: true
+
+  - platform: homeassistant
+    entity_id: sensor.hourly_forecast_temperature_3
+    id: hourly_forecast_temperature_3
+    internal: true
+
+  - platform: homeassistant
+    entity_id: sensor.hourly_forecast_temperature_4
+    id: hourly_forecast_temperature_4
+    internal: true
+
+  # - platform: homeassistant
+  #   entity_id: sensor.mi_flora_sensor_moisture
+  #   id: mi_flora_sensor_moisture
+  #   internal: true
+
+text_sensor:
+  - platform: homeassistant
+    entity_id: sun.sun
+    id: ha_sun
+    internal: true
+  - platform: homeassistant
+    entity_id: sensor.openweatherhourly_forecast_condition
+    id: hourly_forecast_condition
+    internal: true
+  - platform: homeassistant
+    entity_id: sensor.hourly_forecast_time_1
+    id: hourly_forecast_time_1
+    internal: true
+  - platform: homeassistant
+    entity_id: sensor.hourly_forecast_condition_1
+    id: hourly_forecast_condition_1
+    internal: true
+  - platform: homeassistant
+    entity_id: sensor.hourly_forecast_time_2
+    id: hourly_forecast_time_2
+    internal: true
+  - platform: homeassistant
+    entity_id: sensor.hourly_forecast_condition_2
+    id: hourly_forecast_condition_2
+    internal: true
+  - platform: homeassistant
+    entity_id: sensor.hourly_forecast_time_3
+    id: hourly_forecast_time_3
+    internal: true
+  - platform: homeassistant
+    entity_id: sensor.hourly_forecast_condition_3
+    id: hourly_forecast_condition_3
+    internal: true
+  - platform: homeassistant
+    entity_id: sensor.hourly_forecast_time_4
+    id: hourly_forecast_time_4
+    internal: true
+  - platform: homeassistant
+    entity_id: sensor.hourly_forecast_condition_4
+    id: hourly_forecast_condition_4
+    internal: true
+  - platform: homeassistant
+    entity_id: input_text.test
+    id: test_text
+    internal: true
+    on_value: # Actions to perform once data for the last sensor has been received
+      then:
+        - script.execute: all_data_received
+ 
+binary_sensor:
+  - platform: gpio
+    pin: 
+      number: GPIO39
+      inverted: true
+      allow_other_uses: true
+    name: "Lilygo T5 4.7 Button 1"
+    filters:
+      - delayed_on_off: 50ms
+    on_press:
+      then:
+       - logger.log: "39 update display button"   
+       - component.update: t5_display
+  - platform: gpio
+    pin: 
+      number: GPIO34
+      inverted: true
+    name: "Lilygo T5 4.7 Button 2"
+    filters:
+      - delayed_on_off: 50ms
+    on_press:
+      then:
+        - logger.log: "34 toggle sleep button"
+        - lambda: |-
+            if (id(sleep_enabled) == false) {
+              id(sleep_enabled) = true;
+            } else {
+              id(sleep_enabled) = false;
+            }
+        - component.update: t5_display
+        - if:
+            condition:
+              lambda: 'return id(sleep_enabled);'
+            then:
+              - script.execute: enter_sleep
+  - platform: gpio
+    pin: 
+      number: GPIO35
+      inverted: true
+    name: "Lilygo T5 4.7 Button 3"
+    filters:
+      - delayed_on_off: 50ms
+    on_press:
+      then:
+        - logger.log: "35 enter sleep"
+        - script.execute: enter_sleep
+
+font:
+  - file: "fonts/SF-Pro-Rounded-Medium.ttf"
+    id: sf_pro_small
+    size: 24
+    glyphs: |-
+      #!"%()+=,-_.:°0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ abcdefghijklmnopqrstuvwxyz'éèàòùç/&ôœìïöñµ³
+
+  - file: "fonts/SF-Pro-Rounded-Medium.ttf"
+    id: sf_pro
+    size: 40
+    glyphs: |-
+      #!"%()+=,-_.:°0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ abcdefghijklmnopqrstuvwxyz'éèàòùç/&ôœìïöñµ³
+
+  - file: 'fonts/fa-light-300.ttf'
+    id: fa_icons
+    size: 80
+    glyphs:
+      - "\U0000f186" # clear-night
+      - "\U0000f0c2" # cloudy
+      - "\U0000f6c3" # partlycloudy (night)
+      - "\U0000f6c4" # partlycloudy
+      - "\U0000f74e" # fog      
+      - "\U0000f739" # hail
+      - "\U0000f76c" # lightning
+      - "\U0000f740" # lightning-rainy
+      - "\U0000e4e4" # pouring
+      - "\U0000f73f" # rainy
+      - "\U0000f742" # snowy
+      - "\U0000f741" # snowy-rainy
+      - "\U0000f185" # sunny
+      - "\U0000f72e" # windy, windy-variant
+      - "\U0000e491" # exceptional
+      - "\U0000f880" # snooze
+
+script:
+  - id: all_data_received
+    then:
+      - component.update: batt_volt
+      - component.update: batt
+      - logger.log: "All data received"         
+      - component.update: t5_display
+      - script.execute: enter_sleep
+
+  - id: enter_sleep
+    then:
+      - if:
+          condition:
+            lambda: |-
+              return id(sleep_enabled);
+          then:
+            - if:
+                condition:
+                  lambda: |-
+                    auto time = id(ntp).now();
+                    if (!time.is_valid()) { 
+                      return false;
+                    }
+                    return (time.hour < 8); 
+                then:
+                  - logger.log: "It's nighttime, entering long sleep for ${night_sleep_time}"
+                  - lambda: |-
+                      id(esp_is_deep_sleeping) = "true";
+                  - component.update: t5_display       
+                  - deep_sleep.enter: 
+                      id: deep_sleep_1 
+                      # sleep_duration: ${sleep_time}
+                      sleep_duration: ${night_sleep_time}
+                else:
+                  - logger.log: "It's daytime, entering short sleep for ${sleep_time}"
+                  - lambda: |-
+                      id(esp_is_deep_sleeping) = "false";
+                      id(esp_is_sleeping) = "true";
+                  # - component.update: t5_display
+                  - deep_sleep.enter: 
+                      id: deep_sleep_1 
+                      sleep_duration: ${sleep_time}
+          else:
+            - logger.log: "Sleep disabled"
+
+display:
+  - platform: t547
+    id: t5_display
+    greyscale: false
+    invert: true
+    update_interval: never
+    lambda: |-
+      // sizes
+      #define screen_width 960
+      #define screen_height 540
+      #define margin 20
+      #define text_height_med 40
+      #define icon_height 80
+      
+      // weather
+      #define num_of_forecasts 5
+      #define forecast_width (screen_width-(margin*(num_of_forecasts - 1)))/num_of_forecasts
+      #define y_weather_start (screen_height-(text_height_med*2+margin*2+icon_height-text_height_med/2))/2 // 330
+
+      // deep sleep
+      #define x_deep_sleep_icon screen_width/2
+      #define y_deep_sleep_icon screen_height/2
+
+      // status bar
+      if (id(sleep_enabled) == true) {
+        it.print(margin/2, 0, id(sf_pro_small), TextAlign::TOP_LEFT, "Sleep Enabled");
+      } else {
+        it.print(margin/2, 0, id(sf_pro_small), TextAlign::TOP_LEFT, "Sleep Disabled");
+      }
+
+      // if (id(esp_is_sleeping) == true) {
+      if (id(sleep_enabled) == true) {
+        it.strftime(screen_width-margin/2-200, 0, id(sf_pro_small), TextAlign::TOP_RIGHT, "Sleeping Since %H:%M", id(ntp).now());
+      } else if (id(esp_is_deep_sleeping) == true) {
+        it.strftime(screen_width-margin/2-200, 0, id(sf_pro_small), TextAlign::TOP_RIGHT, "Deep Sleeping Since %H:%M", id(ntp).now());
+      } else {
+        it.strftime(screen_width-margin/2-200, 0, id(sf_pro_small), TextAlign::TOP_RIGHT, "UPDATED: %H:%M", id(ntp).now());
+      }
+
+      it.printf(screen_width-margin/2, 0, id(sf_pro_small), TextAlign::TOP_RIGHT, "%.2fV/%.0f%%", id(batt_volt).state, id(batt).state);
+
+      if (id(esp_is_deep_sleeping) == true) {
+        // deep sleep
+        it.printf(x_deep_sleep_icon, y_deep_sleep_icon, id(fa_icons), TextAlign::CENTER, "\U0000f880");
+      } else {
+        // weather forecast now
+        int x_weather = forecast_width/2;
+        int y_weather = y_weather_start;
+
+        it.printf(x_weather, y_weather, id(sf_pro), TextAlign::CENTER, "now");
+        y_weather += text_height_med/2 + margin + icon_height/2;
+        
+        if (id(hourly_forecast_condition).state == "clear-night") {
+          it.printf(x_weather, y_weather, id(fa_icons), TextAlign::CENTER, "\U0000f186");
+        } else if (id(hourly_forecast_condition).state == "cloudy") {
+          it.printf(x_weather, y_weather, id(fa_icons), TextAlign::CENTER, "\U0000f0c2");
+        } else if (id(hourly_forecast_condition).state == "partlycloudy") {
+          if (id(ha_sun).state == "below_horizon") {
+            it.printf(x_weather, y_weather, id(fa_icons), TextAlign::CENTER, "\U0000f6c3");
+          } else {
+            it.printf(x_weather, y_weather, id(fa_icons), TextAlign::CENTER, "\U0000f6c4");
+          }
+        } else if (id(hourly_forecast_condition).state == "fog") {
+          it.printf(x_weather, y_weather, id(fa_icons), TextAlign::CENTER, "\U0000f74e");
+        } else if (id(hourly_forecast_condition).state == "hail") {
+          it.printf(x_weather, y_weather, id(fa_icons), TextAlign::CENTER, "\U0000f739");
+        } else if (id(hourly_forecast_condition).state == "lightning") {
+          it.printf(x_weather, y_weather, id(fa_icons), TextAlign::CENTER, "\U0000f76c");
+        } else if (id(hourly_forecast_condition).state == "lightning-rainy") {
+          it.printf(x_weather, y_weather, id(fa_icons), TextAlign::CENTER, "\U0000f740");
+        } else if (id(hourly_forecast_condition).state == "pouring") {
+          it.printf(x_weather, y_weather, id(fa_icons), TextAlign::CENTER, "\U0000e4e4");
+        } else if (id(hourly_forecast_condition).state == "rainy") {
+          it.printf(x_weather, y_weather, id(fa_icons), TextAlign::CENTER, "\U0000f73f");
+        } else if (id(hourly_forecast_condition).state == "snowy") {
+          it.printf(x_weather, y_weather, id(fa_icons), TextAlign::CENTER, "\U0000f742");
+        } else if (id(hourly_forecast_condition).state == "snowy-rainy") {
+          it.printf(x_weather, y_weather, id(fa_icons), TextAlign::CENTER, "\U0000f741");
+        } else if (id(hourly_forecast_condition).state == "sunny") {
+          it.printf(x_weather, y_weather, id(fa_icons), TextAlign::CENTER, "\U0000f185");
+        } else if (id(hourly_forecast_condition).state == "windy") {
+          it.printf(x_weather, y_weather, id(fa_icons), TextAlign::CENTER, "\U0000f72e");
+        } else if (id(hourly_forecast_condition).state == "windy-variant") {
+          it.printf(x_weather, y_weather, id(fa_icons), TextAlign::CENTER, "\U0000f72e");
+        } else if (id(hourly_forecast_condition).state == "exceptional") {
+          it.printf(x_weather, y_weather, id(fa_icons), TextAlign::CENTER, "\U0000e491");
+        }
+
+        y_weather += icon_height/2 + margin + text_height_med/2;
+        it.printf(x_weather, y_weather, id(sf_pro), TextAlign::CENTER, "%.1f°", id(feels_like_temp).state);
+
+        // weather forecast 1
+        x_weather += margin + forecast_width;
+        y_weather = y_weather_start;
+
+        it.printf(x_weather, y_weather, id(sf_pro), TextAlign::CENTER, "%.20s", id(hourly_forecast_time_1).state.c_str());
+        y_weather += text_height_med/2 + margin + icon_height/2;
+        
+        if (id(hourly_forecast_condition_1).state == "clear-night") {
+          it.printf(x_weather, y_weather, id(fa_icons), TextAlign::CENTER, "\U0000f186");
+        } else if (id(hourly_forecast_condition_1).state == "cloudy") {
+          it.printf(x_weather, y_weather, id(fa_icons), TextAlign::CENTER, "\U0000f0c2");
+        } else if (id(hourly_forecast_condition_1).state == "partlycloudy") {
+          if (id(ha_sun).state == "below_horizon") {
+            it.printf(x_weather, y_weather, id(fa_icons), TextAlign::CENTER, "\U0000f6c3");
+          } else {
+            it.printf(x_weather, y_weather, id(fa_icons), TextAlign::CENTER, "\U0000f6c4");
+          }
+        } else if (id(hourly_forecast_condition_1).state == "fog") {
+          it.printf(x_weather, y_weather, id(fa_icons), TextAlign::CENTER, "\U0000f74e");
+        } else if (id(hourly_forecast_condition_1).state == "hail") {
+          it.printf(x_weather, y_weather, id(fa_icons), TextAlign::CENTER, "\U0000f739");
+        } else if (id(hourly_forecast_condition_1).state == "lightning") {
+          it.printf(x_weather, y_weather, id(fa_icons), TextAlign::CENTER, "\U0000f76c");
+        } else if (id(hourly_forecast_condition_1).state == "lightning-rainy") {
+          it.printf(x_weather, y_weather, id(fa_icons), TextAlign::CENTER, "\U0000f740");
+        } else if (id(hourly_forecast_condition_1).state == "pouring") {
+          it.printf(x_weather, y_weather, id(fa_icons), TextAlign::CENTER, "\U0000e4e4");
+        } else if (id(hourly_forecast_condition_1).state == "rainy") {
+          it.printf(x_weather, y_weather, id(fa_icons), TextAlign::CENTER, "\U0000f73f");
+        } else if (id(hourly_forecast_condition_1).state == "snowy") {
+          it.printf(x_weather, y_weather, id(fa_icons), TextAlign::CENTER, "\U0000f742");
+        } else if (id(hourly_forecast_condition_1).state == "snowy-rainy") {
+          it.printf(x_weather, y_weather, id(fa_icons), TextAlign::CENTER, "\U0000f741");
+        } else if (id(hourly_forecast_condition_1).state == "sunny") {
+          it.printf(x_weather, y_weather, id(fa_icons), TextAlign::CENTER, "\U0000f185");
+        } else if (id(hourly_forecast_condition_1).state == "windy") {
+          it.printf(x_weather, y_weather, id(fa_icons), TextAlign::CENTER, "\U0000f72e");
+        } else if (id(hourly_forecast_condition_1).state == "windy-variant") {
+          it.printf(x_weather, y_weather, id(fa_icons), TextAlign::CENTER, "\U0000f72e");
+        } else if (id(hourly_forecast_condition_1).state == "exceptional") {
+          it.printf(x_weather, y_weather, id(fa_icons), TextAlign::CENTER, "\U0000e491");
+        }
+
+        y_weather += icon_height/2 + margin + text_height_med/2;
+        it.printf(x_weather, y_weather, id(sf_pro), TextAlign::CENTER, "%.1f°", id(hourly_forecast_temperature_1).state);
+
+        // weather forecast 2
+        x_weather += margin + forecast_width;
+        y_weather = y_weather_start;
+
+        it.printf(x_weather, y_weather, id(sf_pro), TextAlign::CENTER, "%.20s", id(hourly_forecast_time_2).state.c_str());
+        y_weather += text_height_med/2 + margin + icon_height/2;
+        
+        if (id(hourly_forecast_condition_2).state == "clear-night") {
+          it.printf(x_weather, y_weather, id(fa_icons), TextAlign::CENTER, "\U0000f186");
+        } else if (id(hourly_forecast_condition_2).state == "cloudy") {
+          it.printf(x_weather, y_weather, id(fa_icons), TextAlign::CENTER, "\U0000f0c2");
+        } else if (id(hourly_forecast_condition_2).state == "partlycloudy") {
+          if (id(ha_sun).state == "below_horizon") {
+            it.printf(x_weather, y_weather, id(fa_icons), TextAlign::CENTER, "\U0000f6c3");
+          } else {
+            it.printf(x_weather, y_weather, id(fa_icons), TextAlign::CENTER, "\U0000f6c4");
+          }
+        } else if (id(hourly_forecast_condition_2).state == "fog") {
+          it.printf(x_weather, y_weather, id(fa_icons), TextAlign::CENTER, "\U0000f74e");
+        } else if (id(hourly_forecast_condition_2).state == "hail") {
+          it.printf(x_weather, y_weather, id(fa_icons), TextAlign::CENTER, "\U0000f739");
+        } else if (id(hourly_forecast_condition_2).state == "lightning") {
+          it.printf(x_weather, y_weather, id(fa_icons), TextAlign::CENTER, "\U0000f76c");
+        } else if (id(hourly_forecast_condition_2).state == "lightning-rainy") {
+          it.printf(x_weather, y_weather, id(fa_icons), TextAlign::CENTER, "\U0000f740");
+        } else if (id(hourly_forecast_condition_2).state == "pouring") {
+          it.printf(x_weather, y_weather, id(fa_icons), TextAlign::CENTER, "\U0000e4e4");
+        } else if (id(hourly_forecast_condition_2).state == "rainy") {
+          it.printf(x_weather, y_weather, id(fa_icons), TextAlign::CENTER, "\U0000f73f");
+        } else if (id(hourly_forecast_condition_2).state == "snowy") {
+          it.printf(x_weather, y_weather, id(fa_icons), TextAlign::CENTER, "\U0000f742");
+        } else if (id(hourly_forecast_condition_2).state == "snowy-rainy") {
+          it.printf(x_weather, y_weather, id(fa_icons), TextAlign::CENTER, "\U0000f741");
+        } else if (id(hourly_forecast_condition_2).state == "sunny") {
+          it.printf(x_weather, y_weather, id(fa_icons), TextAlign::CENTER, "\U0000f185");
+        } else if (id(hourly_forecast_condition_2).state == "windy") {
+          it.printf(x_weather, y_weather, id(fa_icons), TextAlign::CENTER, "\U0000f72e");
+        } else if (id(hourly_forecast_condition_2).state == "windy-variant") {
+          it.printf(x_weather, y_weather, id(fa_icons), TextAlign::CENTER, "\U0000f72e");
+        } else if (id(hourly_forecast_condition_2).state == "exceptional") {
+          it.printf(x_weather, y_weather, id(fa_icons), TextAlign::CENTER, "\U0000e491");
+        }
+
+        y_weather += icon_height/2 + margin + text_height_med/2;
+        it.printf(x_weather, y_weather, id(sf_pro), TextAlign::CENTER, "%.1f°", id(hourly_forecast_temperature_2).state);
+
+        // weather forecast 3
+        x_weather += margin + forecast_width;
+        y_weather = y_weather_start;
+
+        it.printf(x_weather, y_weather, id(sf_pro), TextAlign::CENTER, "%.20s", id(hourly_forecast_time_3).state.c_str());
+        y_weather += text_height_med/2 + margin + icon_height/2;
+        
+        if (id(hourly_forecast_condition_3).state == "clear-night") {
+          it.printf(x_weather, y_weather, id(fa_icons), TextAlign::CENTER, "\U0000f186");
+        } else if (id(hourly_forecast_condition_3).state == "cloudy") {
+          it.printf(x_weather, y_weather, id(fa_icons), TextAlign::CENTER, "\U0000f0c2");
+        } else if (id(hourly_forecast_condition_3).state == "partlycloudy") {
+          if (id(ha_sun).state == "below_horizon") {
+            it.printf(x_weather, y_weather, id(fa_icons), TextAlign::CENTER, "\U0000f6c3");
+          } else {
+            it.printf(x_weather, y_weather, id(fa_icons), TextAlign::CENTER, "\U0000f6c4");
+          }
+        } else if (id(hourly_forecast_condition_3).state == "fog") {
+          it.printf(x_weather, y_weather, id(fa_icons), TextAlign::CENTER, "\U0000f74e");
+        } else if (id(hourly_forecast_condition_3).state == "hail") {
+          it.printf(x_weather, y_weather, id(fa_icons), TextAlign::CENTER, "\U0000f739");
+        } else if (id(hourly_forecast_condition_3).state == "lightning") {
+          it.printf(x_weather, y_weather, id(fa_icons), TextAlign::CENTER, "\U0000f76c");
+        } else if (id(hourly_forecast_condition_3).state == "lightning-rainy") {
+          it.printf(x_weather, y_weather, id(fa_icons), TextAlign::CENTER, "\U0000f740");
+        } else if (id(hourly_forecast_condition_3).state == "pouring") {
+          it.printf(x_weather, y_weather, id(fa_icons), TextAlign::CENTER, "\U0000e4e4");
+        } else if (id(hourly_forecast_condition_3).state == "rainy") {
+          it.printf(x_weather, y_weather, id(fa_icons), TextAlign::CENTER, "\U0000f73f");
+        } else if (id(hourly_forecast_condition_3).state == "snowy") {
+          it.printf(x_weather, y_weather, id(fa_icons), TextAlign::CENTER, "\U0000f742");
+        } else if (id(hourly_forecast_condition_3).state == "snowy-rainy") {
+          it.printf(x_weather, y_weather, id(fa_icons), TextAlign::CENTER, "\U0000f741");
+        } else if (id(hourly_forecast_condition_3).state == "sunny") {
+          it.printf(x_weather, y_weather, id(fa_icons), TextAlign::CENTER, "\U0000f185");
+        } else if (id(hourly_forecast_condition_3).state == "windy") {
+          it.printf(x_weather, y_weather, id(fa_icons), TextAlign::CENTER, "\U0000f72e");
+        } else if (id(hourly_forecast_condition_3).state == "windy-variant") {
+          it.printf(x_weather, y_weather, id(fa_icons), TextAlign::CENTER, "\U0000f72e");
+        } else if (id(hourly_forecast_condition_3).state == "exceptional") {
+          it.printf(x_weather, y_weather, id(fa_icons), TextAlign::CENTER, "\U0000e491");
+        }
+
+        y_weather += icon_height/2 + margin + text_height_med/2;
+        it.printf(x_weather, y_weather, id(sf_pro), TextAlign::CENTER, "%.1f°", id(hourly_forecast_temperature_3).state);
+
+        // weather forecast 4
+        x_weather += margin + forecast_width;
+        y_weather = y_weather_start;
+
+        it.printf(x_weather, y_weather, id(sf_pro), TextAlign::CENTER, "%.20s", id(hourly_forecast_time_4).state.c_str());
+        y_weather += text_height_med/2 + margin + icon_height/2;
+        
+        if (id(hourly_forecast_condition_4).state == "clear-night") {
+          it.printf(x_weather, y_weather, id(fa_icons), TextAlign::CENTER, "\U0000f186");
+        } else if (id(hourly_forecast_condition_4).state == "cloudy") {
+          it.printf(x_weather, y_weather, id(fa_icons), TextAlign::CENTER, "\U0000f0c2");
+        } else if (id(hourly_forecast_condition_4).state == "partlycloudy") {
+          if (id(ha_sun).state == "below_horizon") {
+            it.printf(x_weather, y_weather, id(fa_icons), TextAlign::CENTER, "\U0000f6c3");
+          } else {
+            it.printf(x_weather, y_weather, id(fa_icons), TextAlign::CENTER, "\U0000f6c4");
+          }
+        } else if (id(hourly_forecast_condition_4).state == "fog") {
+          it.printf(x_weather, y_weather, id(fa_icons), TextAlign::CENTER, "\U0000f74e");
+        } else if (id(hourly_forecast_condition_4).state == "hail") {
+          it.printf(x_weather, y_weather, id(fa_icons), TextAlign::CENTER, "\U0000f739");
+        } else if (id(hourly_forecast_condition_4).state == "lightning") {
+          it.printf(x_weather, y_weather, id(fa_icons), TextAlign::CENTER, "\U0000f76c");
+        } else if (id(hourly_forecast_condition_4).state == "lightning-rainy") {
+          it.printf(x_weather, y_weather, id(fa_icons), TextAlign::CENTER, "\U0000f740");
+        } else if (id(hourly_forecast_condition_4).state == "pouring") {
+          it.printf(x_weather, y_weather, id(fa_icons), TextAlign::CENTER, "\U0000e4e4");
+        } else if (id(hourly_forecast_condition_4).state == "rainy") {
+          it.printf(x_weather, y_weather, id(fa_icons), TextAlign::CENTER, "\U0000f73f");
+        } else if (id(hourly_forecast_condition_4).state == "snowy") {
+          it.printf(x_weather, y_weather, id(fa_icons), TextAlign::CENTER, "\U0000f742");
+        } else if (id(hourly_forecast_condition_4).state == "snowy-rainy") {
+          it.printf(x_weather, y_weather, id(fa_icons), TextAlign::CENTER, "\U0000f741");
+        } else if (id(hourly_forecast_condition_4).state == "sunny") {
+          it.printf(x_weather, y_weather, id(fa_icons), TextAlign::CENTER, "\U0000f185");
+        } else if (id(hourly_forecast_condition_4).state == "windy") {
+          it.printf(x_weather, y_weather, id(fa_icons), TextAlign::CENTER, "\U0000f72e");
+        } else if (id(hourly_forecast_condition_4).state == "windy-variant") {
+          it.printf(x_weather, y_weather, id(fa_icons), TextAlign::CENTER, "\U0000f72e");
+        } else if (id(hourly_forecast_condition_4).state == "exceptional") {
+          it.printf(x_weather, y_weather, id(fa_icons), TextAlign::CENTER, "\U0000e491");
+        }
+
+        y_weather += icon_height/2 + margin + text_height_med/2;
+        it.printf(x_weather, y_weather, id(sf_pro), TextAlign::CENTER, "%.1f°", id(hourly_forecast_temperature_4).state);
+
+      }
